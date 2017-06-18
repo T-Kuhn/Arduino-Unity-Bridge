@@ -6,15 +6,15 @@ public class Arduino : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("trying to open that Serial Com");
-
         arduinoSerial = new ArduinoSerial();
         arduinoSerial.ConnectToArduino(baudRate: 9600);
     }
 
     void Update()
     {
-        Debug.Log("current line is: " + arduinoSerial.GetCurrentInputString());
+        Debug.Log("someInt: " + arduinoSerial.ReadInput("someInt"));
+        Debug.Log("someFloat: " + arduinoSerial.ReadInput("someFloat"));
+        Debug.Log("someString: " + arduinoSerial.ReadInput("someString"));
     }
 
     void OnApplicationQuit()

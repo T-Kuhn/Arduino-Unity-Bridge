@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Concurrent;
 using UnityEngine;
 using System;
 using System.IO.Ports;
@@ -6,9 +7,12 @@ using System.Threading;
 
 public class ArduinoSerial
 {
-    String currentInput = "";
     SerialPort port;
-    List<String> availablePorts = new List<String>();
+    List<string> availablePorts = new List<string>();
+    // Note: A ConcurrentDict<Tkey, TValue> would be ideal.
+    // But it can not be used on unity's current mono enviroment.
+    Dictionary<string, string> recievedValues = new Dictionary<string, string>();
+    readonly object lockObject = new object();
 
     /// <summary>
     /// Starts serial communication with the arduino.
@@ -40,16 +44,24 @@ public class ArduinoSerial
     /// Returns the most currently recieved line. 
     /// </summary>
     /// <returns>the most currently recieved line.</returns>
-    public String GetCurrentInputString()
+    public string ReadInput(string key)
     {
-        lock (currentInput)
+        string str;
+        lock (lockObject)
         {
-            String str = currentInput;
+            if (recievedValues.ContainsKey(key))
+            {
+                str = recievedValues[key];
+            }
+            else
+            {
+                str = null;
+            }
         }
-        return currentInput; 
+        return str; 
     }
 
-    void InitializeArduino(String listeningPort, int baudRate)
+    void InitializeArduino(string listeningPort, int baudRate)
     {
         Debug.LogFormat("try to connect to Arduino on port {0} with a baudrate of: {1}.", listeningPort, baudRate);
         SafeAction(() =>
@@ -64,7 +76,6 @@ public class ArduinoSerial
             // port.DataReceived += new SerialDataReceivedEventHandler(DataReceivedHandler);
 
             port.Open();
-            Debug.Log("port opened");
         });
     }
 
@@ -73,10 +84,16 @@ public class ArduinoSerial
     {
         while (port.IsOpen)
         {
+            // We expect a string like this: "time:123,anotherValue:4829.333,aString:string".
             String str = port.ReadLine();
-            lock (currentInput)
+            var subStrings = str.Split(',');
+            lock (lockObject)
             {
-                currentInput = str;
+                foreach(var ss in subStrings)
+                {
+                    var pair = ss.Split(':');
+                    recievedValues[pair[0]] = pair[1];
+                }
             }
             // Sleeping 20ms means 50 updates per second.
             // Or less. Depending on how many times per second the arduino sends a line.
