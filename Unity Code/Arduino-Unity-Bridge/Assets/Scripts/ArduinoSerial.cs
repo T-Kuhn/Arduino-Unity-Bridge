@@ -37,6 +37,7 @@ public class ArduinoSerial
     /// </summary>
     public void ClosePort()
     {
+        Debug.Log("close port");
         SafeAction(() => port.Close(), false);
     }
 
@@ -98,7 +99,7 @@ public class ArduinoSerial
             // Sleeping 20ms means 50 updates per second.
             // Or less. Depending on how many times per second the arduino sends a line.
             // port.ReadLine() is blocking.
-            Thread.Sleep(20);
+            Thread.Sleep(19);
         }
     }
 

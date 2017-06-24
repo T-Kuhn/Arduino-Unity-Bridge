@@ -12,13 +12,14 @@ void setup() {
 
 void loop() {
 
-    delay(1000);
+    // wating for 10ms.  
+    delay(20);
     serialPrintf("someInt:%d,someFloat:%f,someString:%s", someInt, someFloat, someString);
 
 }
 
 // Printing Values to the Serial port.
-// Usage: serialPrintf("test %d %l %c %s %f", l, k, s, j, f);
+// serialPrintf("someInt:%d,someFloat:%f,someString:%s", someInt, someFloat, someString);
 int serialPrintf(char *str, ...) {
     int i, j, count = 0;
 
