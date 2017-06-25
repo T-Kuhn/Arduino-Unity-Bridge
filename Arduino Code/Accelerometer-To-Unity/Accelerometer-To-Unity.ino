@@ -10,20 +10,29 @@ void setup() {
   // address 0x69 if ADD is pulled up to VCC
   //         0x68 if ADD is pulled down to GND
   mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G, 0x68);
-  mpu.setDLPFMode(MPU6050_DLPF_1);
+  mpu.setDLPFMode(MPU6050_DLPF_6);
 }
 
 void loop() {
-  SendRotationValuesToUnity();
+
+  sendRawValsToUnity();
+  //sendRotationValuesToUnity();
+  
   //send all 20ms. Thus, 50 times per second.
   delay(20);
 }
 
-float SendRotationValuesToUnity()
+float sendRawValsToUnity()
 {
-    Vector tmpVector = mpu.readRawAccel();
-    float rotationAroundZAxis = (float)atan2(-tmpVector.YAxis, tmpVector.XAxis);
-    float rotationAroundXAxis = (float)atan2(-tmpVector.YAxis, tmpVector.ZAxis);
+    Vector AccelVector = mpu.readRawAccel();
+    serialPrintf("rawx:%d,rawy:%d,rawz:%d", (int)AccelVector.XAxis, (int)AccelVector.YAxis, (int)AccelVector.ZAxis);
+}
+
+float sendRotationValuesToUnity()
+{
+    Vector AccelVector = mpu.readRawAccel();
+    float rotationAroundZAxis = (float)atan2(-AccelVector.YAxis, AccelVector.XAxis);
+    float rotationAroundXAxis = (float)atan2(-AccelVector.YAxis, AccelVector.ZAxis);
     serialPrintf("raz:%f,rax:%f", rotationAroundZAxis, rotationAroundXAxis);
 }
 
