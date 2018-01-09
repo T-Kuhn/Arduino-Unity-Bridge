@@ -14,6 +14,10 @@ public class AccelerometerDataFromArduino : MonoBehaviour
 
     void Update()
     {
+        if (arduinoSerial.ReadInput("rawx") == null)
+        {
+            return;
+        }
 
         float rawx = float.Parse(arduinoSerial.ReadInput("rawx"), CultureInfo.InvariantCulture.NumberFormat);
         float rawy = float.Parse(arduinoSerial.ReadInput("rawy"), CultureInfo.InvariantCulture.NumberFormat);
