@@ -1,7 +1,7 @@
 #include "Encoder.h"
 
 // 8 and 9 are inputs
-Encoder Encoder1(8, 9, 10, 11);
+Encoder Encoder1(10, 11);
 
 void setup() {
   Serial.begin(115200);
