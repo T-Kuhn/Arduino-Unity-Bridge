@@ -7,6 +7,7 @@ using System.Threading;
 public class ArduinoSerial
 {
     SerialPort port;
+    string portName;
     List<string> availablePorts = new List<string>();
     // Note: A ConcurrentDict<Tkey, TValue> would be ideal.
     // But it can not be used on unity's current mono enviroment.
@@ -20,12 +21,13 @@ public class ArduinoSerial
     /// the baud rate must be the same as the one setup on the arduino.
     /// will use 9600 if nothing specified.
     /// </param>
-    public void ConnectToArduino(int baudRate = 9600)
+    public void ConnectToArduino(int baudRate = 9600, string pName = "COM3")
     {
+        portName = pName;
         SafeAction(()=>GetPortNames());
 
         // just try to use the first port in the list. Needs to be fixed in the future.
-        SafeAction(() => InitializeArduino(availablePorts[0], baudRate));
+        SafeAction(() => InitializeArduino(portName, baudRate));
 
         Thread serialPortListenerThread = new Thread(RecieveDataInHelperThread);
         serialPortListenerThread.Start();

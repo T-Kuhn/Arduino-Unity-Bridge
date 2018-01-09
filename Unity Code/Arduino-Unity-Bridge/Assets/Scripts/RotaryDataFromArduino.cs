@@ -6,11 +6,12 @@ public class RotaryDataFromArduino : MonoBehaviour
     public GameObject go;
     ArduinoSerial arduinoSerial;
     Quaternion startRot;
+    [SerializeField] string portName;
 
     void Start()
     {
         arduinoSerial = new ArduinoSerial();
-        arduinoSerial.ConnectToArduino(baudRate: 115200);
+        arduinoSerial.ConnectToArduino(baudRate: 115200, pName: portName);
         startRot = go.transform.rotation;
     }
 
