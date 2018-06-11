@@ -25,8 +25,9 @@ public class RotaryDataFromArduino : MonoBehaviour
         float value = float.Parse(arduinoSerial.ReadInput("val"), CultureInfo.InvariantCulture.NumberFormat);
         Debug.Log("val: " + value);
 
-        go.transform.rotation = Quaternion.RotateTowards(go.transform.rotation, 
-           Quaternion.Euler( startRot.eulerAngles.x, startRot.eulerAngles.y, value / 600f * 360f ), Time.deltaTime * 500);
+        //go.transform.rotation = Quaternion.RotateTowards(go.transform.rotation, 
+        //   Quaternion.Euler(startRot.eulerAngles.x, startRot.eulerAngles.y, value / 600f * 360f ), Time.deltaTime * 1000);
+        go.transform.rotation = Quaternion.Euler(startRot.eulerAngles.x, startRot.eulerAngles.y, value / 600f * 360f);
     }
 
     void OnApplicationQuit()
