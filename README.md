@@ -2,7 +2,7 @@
 Easy to use Serial Port communication Unity <-> Arduino.
 
 ## Necessary settings on Unity
-We need to open a serial port from within the mono enviroment. The mono Enviroment Unity uses normally is a stripped down one. But this can be changed via Edit -> Project Settings -> Player. Look for a Setting called "Api Compatibility Level" and set it to ".NET 2.0".
+We need to open a serial port from within the mono environment. The mono environment Unity uses normally is a stripped down one. But this can be changed via Edit -> Project Settings -> Player. Look for a Setting called "Api Compatibility Level" and set it to ".NET 2.0".
 
 ## Simple Example
 ### On the Arduino

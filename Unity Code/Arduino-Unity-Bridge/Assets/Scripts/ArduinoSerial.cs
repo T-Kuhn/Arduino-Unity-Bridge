@@ -3,12 +3,15 @@ using UnityEngine;
 using System;
 using System.IO.Ports;
 using System.Threading;
+using UniRx;
 
 public class ArduinoSerial
 {
     SerialPort port;
-    string portName;
-    List<string> availablePorts = new List<string>();
+    Thread serialPortListenerThread;
+    bool dataRecieved;
+    int baud;
+    Stack<string> availablePorts = new Stack<string>();
     // Note: A ConcurrentDict<Tkey, TValue> would be ideal.
     // But it can not be used on unity's current mono enviroment.
     Dictionary<string, string> recievedValues = new Dictionary<string, string>();
@@ -21,17 +24,67 @@ public class ArduinoSerial
     /// the baud rate must be the same as the one setup on the arduino.
     /// will use 9600 if nothing specified.
     /// </param>
-    public void ConnectToArduino(int baudRate = 9600, string pName = "COM3")
+    public void ConnectToArduino(int baudRate = 9600)
     {
-        portName = pName;
+        baud = baudRate;
+
+        Observable.Timer(System.TimeSpan.FromSeconds(5), System.TimeSpan.FromSeconds(5))
+            .Subscribe(_ => CheckConnection());
         SafeAction(()=>GetPortNames());
-
-        // just try to use the first port in the list. Needs to be fixed in the future.
-        SafeAction(() => InitializeArduino(portName, baudRate));
-
-        Thread serialPortListenerThread = new Thread(RecieveDataInHelperThread);
-        serialPortListenerThread.Start();
+        Connect();
     }
+
+    void Connect()
+    {
+        if (serialPortListenerThread != null)
+        {
+            serialPortListenerThread.Abort();
+            ClosePort();
+        }
+
+        if (availablePorts != null && availablePorts.Count > 0)
+        {
+            var portName = availablePorts.Pop();
+            // just try to use the first port in the list. Needs to be fixed in the future.
+            SafeAction(() => InitializeArduino(portName, baud));
+
+            serialPortListenerThread = new Thread(RecieveDataInHelperThread);
+            serialPortListenerThread.Start();
+        }
+        else
+        {
+            SafeAction(()=>GetPortNames());
+        }
+    }
+
+    void CheckConnection()
+    {
+        if (dataRecieved)
+        {
+            Debug.Log("connection is OK.");
+        }
+        else
+        {
+            Debug.Log("reconnect");
+            Connect();
+        }
+
+        dataRecieved = false;
+    }
+    // a quick memo:
+    // here's how the thing should behave:
+    // 1. as soon as the connect thing get's called, get the names of all the serial ports.
+    // 2. connect using the first in the list.
+    // 3. do the thing for 1 second.
+    // 4. look if there was good incoming data in that period.
+    //    if "yes":
+    //    schedule a new 1-second check.
+    //    if "no":
+    //      check if there are any ports available.
+    //      if "yes":
+    //        close old port and connect to next available port.
+    //      if "no":
+    //        get new ports Stack and connect to the first port in there.
 
     /// <summary>
     /// Closes the serial port and also shuts down all related helper threads.
@@ -53,6 +106,7 @@ public class ArduinoSerial
         {
             if (recievedValues.ContainsKey(key))
             {
+                dataRecieved = true;
                 str = recievedValues[key];
             }
             else
@@ -123,12 +177,13 @@ public class ArduinoSerial
     // Gets a list of all serial port names.
     void GetPortNames()
     {
+        availablePorts = new Stack<string>();
         string[] ports = SerialPort.GetPortNames();
 
         foreach (string port in ports)
         {
             Debug.Log("found port: " + port);
-            availablePorts.Add(port);
+            availablePorts.Push(port);
         }
     }
 
